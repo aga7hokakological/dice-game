@@ -19,8 +19,8 @@ pub mod dice_game {
 
         let _game_wallet_lamports = **game_wallet.to_account_info().lamports.borrow();
 
-        let d1 = Clock::get().unwrap().unix_timestamp as u64;
-        let d2 = Clock::get().unwrap().unix_timestamp as u64;
+        let d1 = (Clock::get().unwrap().unix_timestamp / 100000) as u64;
+        let d2 = (Clock::get().unwrap().unix_timestamp / 100000) as u64;
 
         player.dice1 = d1;
         player.dice2 = d2;
@@ -40,6 +40,19 @@ pub mod dice_game {
                 &[
                     game_wallet.to_account_info(),
                     ctx.accounts.player.to_account_info(),
+                    ctx.accounts.system_program.to_account_info()
+                ],
+            )?;
+        } else {
+            anchor_lang::solana_program::program::invoke(
+                &anchor_lang::solana_program::system_instruction::transfer(
+                    ctx.accounts.player.to_account_info().key,
+                    game_wallet.to_account_info().key,
+                    placed_bet,
+                ),
+                &[
+                    ctx.accounts.player.to_account_info(),
+                    game_wallet.to_account_info(),
                     ctx.accounts.system_program.to_account_info()
                 ],
             )?;
